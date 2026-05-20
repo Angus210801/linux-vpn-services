@@ -6,6 +6,43 @@ PROJECT_DIR="$(cd "${SOURCE_DIR}/.." && pwd)"
 BINARY_SOURCE="${MIHOMO_BINARY_SOURCE:-${PROJECT_DIR}/bin/mihomo}"
 MIHOMO_VERSION="${MIHOMO_VERSION:-latest}"
 
+download_file() {
+  local url output
+  url="$1"
+  output="$2"
+
+  if type -P curl >/dev/null 2>&1; then
+    curl -fsSL "${url}" -o "${output}"
+    return 0
+  fi
+
+  if type -P wget >/dev/null 2>&1; then
+    wget -qO "${output}" "${url}"
+    return 0
+  fi
+
+  if type -P python3 >/dev/null 2>&1; then
+    python3 - "${url}" "${output}" <<'PY'
+import sys
+import urllib.request
+
+url = sys.argv[1]
+output = sys.argv[2]
+
+with urllib.request.urlopen(url, timeout=60) as response, open(output, "wb") as file:
+    while True:
+        chunk = response.read(1024 * 1024)
+        if not chunk:
+            break
+        file.write(chunk)
+PY
+    return 0
+  fi
+
+  echo "missing downloader: install curl or wget, or provide python3" >&2
+  exit 1
+}
+
 download_mihomo_binary() {
   local os arch asset_name api_url download_url tmp_gz
 
@@ -102,7 +139,7 @@ PY
   trap 'rm -f "${tmp_gz}"' RETURN
 
   echo "downloading Mihomo from ${download_url}" >&2
-  curl -fsSL "${download_url}" -o "${tmp_gz}"
+  download_file "${download_url}" "${tmp_gz}"
   gzip -dc "${tmp_gz}" > "${PROJECT_DIR}/bin/mihomo"
   chmod 755 "${PROJECT_DIR}/bin/mihomo"
 }

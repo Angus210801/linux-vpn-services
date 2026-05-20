@@ -67,7 +67,6 @@ linux-vpn-services/
 
 - Ubuntu 22.04 or similar Linux with `systemd`
 - `python3`
-- `curl`
 - `gzip`
 - root access for installation
 
@@ -91,6 +90,7 @@ Installer behavior:
 - If `bin/mihomo` exists, it uses that.
 - If `MIHOMO_BINARY_SOURCE` is set, it uses that path.
 - Otherwise it downloads a matching Mihomo binary from the official GitHub release for the current Linux architecture.
+- Download fallback order is: `curl` -> `wget` -> `python3 urllib`.
 
 If the binary is elsewhere:
 
