@@ -1,0 +1,15 @@
+[Unit]
+Description=Mihomo CLI VPN
+Wants=network-online.target
+After=network-online.target systemd-resolved.service
+
+[Service]
+Type=simple
+ExecStartPre=/usr/local/bin/mihomo -t -f /etc/mihomo/config.yaml
+ExecStart=/usr/local/bin/mihomo -f /etc/mihomo/config.yaml
+Restart=always
+RestartSec=5
+LimitNOFILE=1048576
+
+[Install]
+WantedBy=multi-user.target

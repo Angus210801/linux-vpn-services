@@ -1,0 +1,9 @@
+[Unit]
+Description=Refresh Mihomo subscription
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/mihomo/subscription.env
+ExecStart=/usr/local/libexec/mihomo-update-subscription
