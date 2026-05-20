@@ -167,7 +167,7 @@ matches = [
 if not matches:
     raise SystemExit(1)
 
-def priority(url: str) -> tuple[int, str]:
+def priority(url):
     name = url.rsplit("/", 1)[-1]
     if "compatible" in name:
         return (0, name)
