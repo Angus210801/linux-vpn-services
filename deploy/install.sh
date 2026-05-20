@@ -5,6 +5,21 @@ SOURCE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "${SOURCE_DIR}/.." && pwd)"
 BINARY_SOURCE="${MIHOMO_BINARY_SOURCE:-${PROJECT_DIR}/bin/mihomo}"
 MIHOMO_VERSION="${MIHOMO_VERSION:-latest}"
+PROJECT_ENV_FILE="${PROJECT_DIR}/env/subscription.env"
+PROJECT_ENV_LOCAL_FILE="${PROJECT_DIR}/env/subscription.env.local"
+
+load_project_subscription_env() {
+  local env_file
+
+  for env_file in "${PROJECT_ENV_FILE}" "${PROJECT_ENV_LOCAL_FILE}"; do
+    if [[ -f "${env_file}" ]]; then
+      # shellcheck disable=SC1090
+      set -a
+      . "${env_file}"
+      set +a
+    fi
+  done
+}
 
 download_file() {
   local url output
@@ -149,6 +164,8 @@ if [[ "${EUID}" -ne 0 ]]; then
   exit 1
 fi
 
+load_project_subscription_env
+
 if [[ ! -x "${BINARY_SOURCE}" ]]; then
   download_mihomo_binary
 fi
@@ -171,7 +188,9 @@ EOF
 fi
 
 if [[ ! -f /etc/mihomo/subscription.env ]]; then
-  echo "missing /etc/mihomo/subscription.env; set MIHOMO_SUBSCRIPTION_URL before running this installer" >&2
+  echo "missing subscription settings" >&2
+  echo "set MIHOMO_SUBSCRIPTION_URL in the environment, or create ${PROJECT_ENV_FILE}" >&2
+  echo "you can copy ${PROJECT_DIR}/env/subscription.env.example to ${PROJECT_ENV_FILE}" >&2
   exit 1
 fi
 

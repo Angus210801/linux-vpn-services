@@ -72,7 +72,7 @@ linux-vpn-services/
 
 ## Install
 
-1. Export your subscription URL in the shell.
+1. Put your subscription settings in `env/subscription.env`, or export them in the shell.
 2. Optionally provide a local Mihomo binary, or let the installer download one automatically.
 3. Run the installer as root.
 
@@ -80,9 +80,17 @@ Example:
 
 ```bash
 cd ~/linux-vpn-services
+cp env/subscription.env.example env/subscription.env
+# edit env/subscription.env and set your real subscription URL
+sudo ./deploy/install.sh
+```
+
+You can still use shell environment variables, but note that plain `sudo` may drop them. If you prefer that route, use `sudo -E` after exporting:
+
+```bash
 export MIHOMO_SUBSCRIPTION_URL='https://example.com/subscription'
 export MIHOMO_ALLOWED_REGIONS='US,DE,JP,KR,SG'
-sudo ./deploy/install.sh
+sudo -E ./deploy/install.sh
 ```
 
 Installer behavior:
