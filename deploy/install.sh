@@ -21,6 +21,50 @@ load_project_subscription_env() {
   done
 }
 
+prompt_for_subscription_env() {
+  local input_url input_regions
+
+  if [[ -n "${MIHOMO_SUBSCRIPTION_URL:-}" ]]; then
+    return 0
+  fi
+
+  if [[ ! -t 0 || ! -t 1 ]]; then
+    return 1
+  fi
+
+  echo "MIHOMO_SUBSCRIPTION_URL is not set." >&2
+  read -r -p "Enter subscription URL: " input_url
+  if [[ -z "${input_url}" ]]; then
+    echo "subscription URL cannot be empty" >&2
+    exit 1
+  fi
+
+  read -r -p "Allowed regions [US,DE,JP,KR,SG]: " input_regions
+
+  MIHOMO_SUBSCRIPTION_URL="${input_url}"
+  MIHOMO_ALLOWED_REGIONS="${input_regions:-US,DE,JP,KR,SG}"
+}
+
+ensure_subscription_env() {
+  load_project_subscription_env
+
+  if [[ -n "${MIHOMO_SUBSCRIPTION_URL:-}" ]]; then
+    return 0
+  fi
+
+  if prompt_for_subscription_env; then
+    return 0
+  fi
+
+  echo "missing subscription settings" >&2
+  echo "use one of these methods:" >&2
+  echo "  1. create ${PROJECT_ENV_FILE}" >&2
+  echo "  2. run: sudo -E ./deploy/install.sh" >&2
+  echo "  3. rerun and enter the subscription URL when prompted" >&2
+  echo "you can copy ${PROJECT_DIR}/env/subscription.env.example to ${PROJECT_ENV_FILE}" >&2
+  exit 1
+}
+
 download_file() {
   local url output
   url="$1"
@@ -164,7 +208,7 @@ if [[ "${EUID}" -ne 0 ]]; then
   exit 1
 fi
 
-load_project_subscription_env
+ensure_subscription_env
 
 if [[ ! -x "${BINARY_SOURCE}" ]]; then
   download_mihomo_binary
@@ -185,13 +229,6 @@ if [[ -n "${MIHOMO_SUBSCRIPTION_URL:-}" ]]; then
 MIHOMO_SUBSCRIPTION_URL=${MIHOMO_SUBSCRIPTION_URL}
 MIHOMO_ALLOWED_REGIONS=${MIHOMO_ALLOWED_REGIONS:-US,DE,JP,KR,SG}
 EOF
-fi
-
-if [[ ! -f /etc/mihomo/subscription.env ]]; then
-  echo "missing subscription settings" >&2
-  echo "set MIHOMO_SUBSCRIPTION_URL in the environment, or create ${PROJECT_ENV_FILE}" >&2
-  echo "you can copy ${PROJECT_DIR}/env/subscription.env.example to ${PROJECT_ENV_FILE}" >&2
-  exit 1
 fi
 
 systemctl daemon-reload
