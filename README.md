@@ -48,7 +48,7 @@ MIHOMO_ALLOWED_REGIONS=US,JP,SG
 ## Project layout
 
 ```text
-linux-vpn-service/
+linux-vpn-services/
 ├── README.md
 ├── bin/
 ├── deploy/
@@ -68,28 +68,48 @@ linux-vpn-service/
 - Ubuntu 22.04 or similar Linux with `systemd`
 - `python3`
 - `curl`
-- a Mihomo binary
+- `gzip`
 - root access for installation
 
 ## Install
 
-1. Put a Mihomo binary at `bin/mihomo`, or point to one with `MIHOMO_BINARY_SOURCE`.
-2. Export your subscription URL in the shell.
+1. Export your subscription URL in the shell.
+2. Optionally provide a local Mihomo binary, or let the installer download one automatically.
 3. Run the installer as root.
 
 Example:
 
 ```bash
-cd ~/linux-vpn-service
+cd ~/linux-vpn-services
 export MIHOMO_SUBSCRIPTION_URL='https://example.com/subscription'
 export MIHOMO_ALLOWED_REGIONS='US,DE,JP,KR,SG'
 sudo ./deploy/install.sh
 ```
 
+Installer behavior:
+
+- If `bin/mihomo` exists, it uses that.
+- If `MIHOMO_BINARY_SOURCE` is set, it uses that path.
+- Otherwise it downloads a matching Mihomo binary from the official GitHub release for the current Linux architecture.
+
 If the binary is elsewhere:
 
 ```bash
 export MIHOMO_BINARY_SOURCE=/path/to/mihomo
+sudo ./deploy/install.sh
+```
+
+If you want a specific Mihomo release tag instead of the latest:
+
+```bash
+export MIHOMO_VERSION=v1.19.25
+sudo ./deploy/install.sh
+```
+
+If you need to force a custom binary URL:
+
+```bash
+export MIHOMO_DOWNLOAD_URL='https://github.com/MetaCubeX/mihomo/releases/download/v1.19.25/mihomo-linux-amd64-compatible-v1.19.25.gz'
 sudo ./deploy/install.sh
 ```
 
